@@ -5,6 +5,7 @@ import 'package:flutter_work_track/core/constants/app_colors.dart';
 import 'package:flutter_work_track/core/constants/size_utils.dart';
 import 'package:flutter_work_track/data/models/employee_model.dart';
 import 'package:flutter_work_track/routes/app_routes.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class EmployeeCard extends StatefulWidget {
   final EmployeeModel employee;
@@ -42,7 +43,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
                 onPressed: (context) => widget.onDelete(),
                 backgroundColor: AppColors.redBackgroundColor,
                 foregroundColor: AppColors.whiteTextColor,
-                icon: Icons.delete_forever_outlined,
+                icon: FontAwesomeIcons.trashCan,
               ),
             ],
           ),

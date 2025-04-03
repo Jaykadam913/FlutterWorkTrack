@@ -14,6 +14,7 @@ import 'package:flutter_work_track/presentation/cubit/employee_cubit.dart';
 import 'package:flutter_work_track/presentation/widgets/custom_date_picker.dart';
 import 'package:flutter_work_track/presentation/widgets/show_position_picker_dialog.dart';
 import 'package:flutter_work_track/routes/app_routes.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
 class AddEditEmployeeScreen extends StatelessWidget {
@@ -99,7 +100,7 @@ class AddEditEmployeeScreen extends StatelessWidget {
   ) {
     return IconButton(
       onPressed: () => _showDeleteDialog(context, employeeCubit),
-      icon: Image.asset(AppImages.deleteIcon),
+      icon: Icon(FontAwesomeIcons.trashCan),
     );
   }
 
@@ -121,7 +122,14 @@ class AddEditEmployeeScreen extends StatelessWidget {
               child: const Text(AppStrings.cancelCTATitle, style: TextStyle(color: Colors.black)),
             ),
             TextButton(
-              onPressed: () => _deleteEmployee(context, employeeCubit),
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, AppRoutes.home);
+                employeeCubit.deleteEmployee(employee!.id);
+                showSnackBar(AppStrings.empDeletedSuccessTitle,snackbarAction: SnackBarAction(
+                  label: AppStrings.undoTitle,
+                  onPressed: () => employeeCubit.addEmployee(employee!, undoItem: true),
+                ));
+              },
               child: const Text(AppStrings.deleteCTATitle, style: TextStyle(color: AppColors.primaryBlue)),
             ),
           ],
@@ -196,7 +204,17 @@ class AddEditEmployeeScreen extends StatelessWidget {
       children: [
         CustomDatePicker(
           selectedDate: startDate ?? '',
-          onDateChanged: cubit.updateStartDate,
+          onDateChanged: (value){
+            if (value == endDate) {
+              showSnackBar(AppStrings.startEndDateError);
+              return;
+            }
+            if (endDate!=null && value.toDate().isAfter(endDate.toDate())) {
+              showSnackBar(AppStrings.startBeforeDate);
+              return;
+            }
+            cubit.updateStartDate(value);
+          },
           hintText: AppStrings.noDateTitle,
         ),
         const Padding(
@@ -208,7 +226,17 @@ class AddEditEmployeeScreen extends StatelessWidget {
         ),
         CustomDatePicker(
           selectedDate: endDate ?? '',
-          onDateChanged: cubit.updateEndDate,
+          onDateChanged: (value){
+            if (value == startDate) {
+              showSnackBar(AppStrings.startEndDateError);
+              return;
+            }
+            if (startDate!=null && startDate!.toDate().isAfter(value.toDate())) {
+              showSnackBar(AppStrings.startBeforeDate);
+              return;
+            }
+            cubit.updateEndDate(value);
+          },
           hintText: AppStrings.noDateTitle,
         ),
       ],
@@ -309,14 +337,6 @@ class AddEditEmployeeScreen extends StatelessWidget {
       showSnackBar(AppStrings.pleaseFillFieldsError);
       return;
     }
-    if (state.startDate == state.endDate) {
-      showSnackBar(AppStrings.startEndDateError);
-      return;
-    }
-    if (state.startDate!.toDate().isAfter(state.endDate!.toDate())) {
-      showSnackBar(AppStrings.startBeforeDate);
-      return;
-    }
 
     final newEmployee = EmployeeModel(
       id: employee?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
@@ -334,23 +354,6 @@ class AddEditEmployeeScreen extends StatelessWidget {
       showSnackBar(AppStrings.employeeAddedSuccess);
     }
 
-    Navigator.pushReplacementNamed(context, AppRoutes.home);
-  }
-
-  void _deleteEmployee(
-    BuildContext context,
-    EmployeeCubit employeeCubit,
-  ) async {
-    await employeeCubit.deleteEmployee(employee!.id);
-    showSnackBar(
-      AppStrings.empDeletedSuccessTitle,
-      snackbarAction: SnackBarAction(
-        label: AppStrings.undoTitle,
-        onPressed: () {
-          employeeCubit.addEmployee(employee!, undoItem: true);
-        },
-      ),
-    );
     Navigator.pushReplacementNamed(context, AppRoutes.home);
   }
 }

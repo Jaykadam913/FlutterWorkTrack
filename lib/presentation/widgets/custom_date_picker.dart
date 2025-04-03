@@ -31,9 +31,12 @@ class CustomDatePicker extends StatelessWidget {
         },
         child: InputDecorator(
           decoration: InputDecoration(
-            prefixIcon: Image.asset(
-              AppImages.calendarIcon,
-              color: AppColors.primaryBlue,
+            prefixIcon: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 6),
+              child: Image.asset(
+                AppImages.calendarIcon,
+                color: AppColors.primaryBlue,
+              ),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -48,13 +51,16 @@ class CustomDatePicker extends StatelessWidget {
               borderSide: BorderSide(color: Colors.green, width: 2),
             ),
           ),
-          child: Text(
-            formatDate(),
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color:
-                  selectedDate.isEmpty
-                      ? AppColors.greyTextAccentColor
-                      : AppColors.textAccentColor,
+          child: Padding(
+            padding: EdgeInsets.only(top: 3),
+            child: Text(
+              formatDate(),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color:
+                    selectedDate.isEmpty
+                        ? AppColors.greyTextAccentColor
+                        : AppColors.textAccentColor,
+              ),
             ),
           ),
         ),

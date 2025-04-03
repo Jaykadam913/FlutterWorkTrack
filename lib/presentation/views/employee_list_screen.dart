@@ -24,19 +24,13 @@ class EmployeeListScreen extends StatefulWidget {
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
   late EmployeeCubit employeeCubit;
 
-  @override
-  void initState() {
-    super.initState();
-    employeeCubit = context.read<EmployeeCubit>();
-    employeeCubit.loadEmployees();
-  }
-
   void _navigateToAddEmployee() {
     Navigator.pushNamed(context, AppRoutes.addEditEmployee);
   }
 
   @override
   Widget build(BuildContext context) {
+    employeeCubit = context.watch<EmployeeCubit>();
     return Scaffold(
       appBar: AppBar(
         title: Text(AppStrings.employeeListTitle,
@@ -51,13 +45,8 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       ),
       body: SafeArea(
         child: BlocConsumer<EmployeeCubit, EmployeeState>(
-          listener: (context, state) {
-            if (state is EmployeeError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-              );
-            }
-          },
+          bloc:  employeeCubit..loadEmployees(),
+          listener: (context, state) {},
           builder: (context, state) {
             if (state is EmployeeLoading) {
               return const Center(child: CircularProgressIndicator());

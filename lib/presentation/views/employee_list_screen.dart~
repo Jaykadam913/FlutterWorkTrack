@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_work_track/core/constants/app_colors.dart';
 import 'package:flutter_work_track/core/constants/app_constants.dart';
+import 'package:flutter_work_track/core/constants/app_images.dart';
 import 'package:flutter_work_track/core/constants/app_strings.dart';
 import 'package:flutter_work_track/core/constants/extensions.dart';
 import 'package:flutter_work_track/core/constants/size_utils.dart';
@@ -50,13 +51,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       ),
       body: SafeArea(
         child: BlocConsumer<EmployeeCubit, EmployeeState>(
-          listener: (context, state) {
-            if (state is EmployeeError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-              );
-            }
-          },
+          listener: (context, state) {},
           builder: (context, state) {
             if (state is EmployeeLoading) {
               return const Center(child: CircularProgressIndicator());
@@ -109,7 +104,13 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                 ],
               );
             } else {
-              return const Center(child: Text(AppStrings.noDataAvailableTitle));
+              return Center(
+                child: Image.asset(
+                  AppImages.noDataFoundIcon,
+                  width: 100.w,
+                  height: 100.h,
+                ),
+              );
             }
           },
         ),

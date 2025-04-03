@@ -26,7 +26,7 @@ class EmployeeCubit extends Cubit<EmployeeState> {
         safeEmit(EmployeeLoaded(employees));
       }
     } catch (e) {
-      safeEmit(EmployeeError('No Employees Found'));
+      safeEmit(EmployeeError(e.toString()));
     }
   }
 
@@ -47,8 +47,7 @@ class EmployeeCubit extends Cubit<EmployeeState> {
 
   /// Delete an employee
   Future<void> deleteEmployee(String id) async {
-    await _employeeRepository.deleteEmployee(id).then((value) async{
-      await loadEmployees();
-    });
+    await _employeeRepository.deleteEmployee(id);
+    await loadEmployees();
   }
 }
