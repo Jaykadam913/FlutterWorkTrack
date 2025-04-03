@@ -1,0 +1,229 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_work_track/core/constants/app_colors.dart';
+import 'package:flutter_work_track/core/constants/app_images.dart';
+import 'package:flutter_work_track/core/constants/app_strings.dart';
+import 'package:flutter_work_track/core/constants/app_styles.dart';
+import 'package:flutter_work_track/core/constants/extensions.dart';
+import 'package:flutter_work_track/core/constants/size_utils.dart';
+import 'package:responsive_framework/responsive_framework.dart';
+import 'package:table_calendar/table_calendar.dart';
+
+Future<void> datePickerDialog(BuildContext context, PageController pageController,
+    String? selectedDate, Function(String) onDaySelected) async {
+  DateTime now = DateTime.now();
+  ValueNotifier<DateTime> focusedDayNotifier =
+  ValueNotifier(selectedDate!.isNotEmpty ? selectedDate.toDate() : now);
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      bool isMobile = ResponsiveBreakpoints.of(context).smallerThan(TABLET);
+
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          width: isMobile ? 100.w : 60.w,  // Full width on mobile, fixed on desktop
+          padding: EdgeInsets.all(3.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ValueListenableBuilder<DateTime>(
+                valueListenable: focusedDayNotifier,
+                builder: (context, focusedDayValue, _) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ResponsiveRowColumn(
+                        layout: ResponsiveRowColumnType.ROW,
+                        rowMainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ResponsiveRowColumnItem(
+                            child: _buildPresetButton(
+                              context, focusedDayValue, AppStrings.today, now,
+                                  (date) => focusedDayNotifier.value = date,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(width: 2.w),
+                          ),
+                          ResponsiveRowColumnItem(
+                            child: _buildPresetButton(
+                              context, focusedDayValue, AppStrings.nextMonday,
+                              _getNextWeekday(now, DateTime.monday),
+                                  (date) => focusedDayNotifier.value = date,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      ResponsiveRowColumn(
+                        layout: ResponsiveRowColumnType.ROW,
+                        rowMainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ResponsiveRowColumnItem(
+                            child: _buildPresetButton(
+                              context, focusedDayValue, AppStrings.nextTuesday,
+                              _getNextWeekday(now, DateTime.tuesday),
+                                  (date) => focusedDayNotifier.value = date,
+                            ),
+                          ),
+                          ResponsiveRowColumnItem(
+                            child: SizedBox(width: 2.w,),
+                          ),
+                          ResponsiveRowColumnItem(
+                            child: _buildPresetButton(
+                              context, focusedDayValue, AppStrings.afterOneWeek,
+                              now.add(const Duration(days: 7)),
+                                  (date) => focusedDayNotifier.value = date,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 2.h),
+                      TableCalendar(
+                        firstDay: DateTime(2000),
+                        lastDay: DateTime(2100),
+                        focusedDay: focusedDayValue,
+                        headerVisible: true,
+                        headerStyle:
+                        const HeaderStyle(formatButtonVisible: false, titleCentered: true),
+                        currentDay: focusedDayValue,
+                        calendarFormat: CalendarFormat.month,
+                        onDaySelected: (selectedDay, focusedDay) {
+                          focusedDayNotifier.value = focusedDay;
+                        },
+                        onCalendarCreated: (controller) => pageController = controller,
+                        onPageChanged: (focusedDay) {
+                          focusedDayNotifier.value = focusedDay;
+                        },
+                        calendarStyle: const CalendarStyle(
+                          selectedDecoration: BoxDecoration(
+                            color: AppColors.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                          todayDecoration: BoxDecoration(
+                            color: AppColors.primaryBlue,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              Divider(thickness: 1),
+              SizedBox(height: 1.h),
+              ValueListenableBuilder<DateTime>(
+                valueListenable: focusedDayNotifier,
+                builder: (context, selectedDateValue, _) {
+                  return ResponsiveRowColumn(
+                    layout: ResponsiveRowColumnType.ROW,
+                    rowMainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ResponsiveRowColumnItem(child:  Row(
+                        children: [
+                          Image.asset(AppImages.calendarIcon, color: AppColors.primaryBlue, width: 20, height: 20 ,),
+                          SizedBox(width: 1.w),
+                          Padding(
+                            padding: EdgeInsets.only(top: 4),
+                            child: Text(
+                              selectedDateValue.toDateString(),
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: AppColors.textAccentColor,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),),
+                      ResponsiveRowColumnItem(child: Spacer()),
+                      ResponsiveRowColumnItem(
+                        child: _buildButton(
+                            context,
+                            AppStrings.cancelCTATitle,
+                            AppColors.greyCTACancelColor,
+                            AppColors.primaryBlue,
+                                () => Navigator.of(context).pop()),
+                      ),
+                      ResponsiveRowColumnItem(child:  SizedBox(width: kIsWeb?1.w:4.w),),
+                      ResponsiveRowColumnItem(
+                        child: _buildButton(
+                            context,
+                            AppStrings.saveCTATitle,
+                            AppColors.primaryBlue,
+                            AppColors.whiteTextColor,
+                                () {
+                              onDaySelected(selectedDateValue.toDateString());
+                              Navigator.of(context).pop();
+                            }),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+Widget _buildPresetButton(BuildContext context, DateTime? initialDate, String label, DateTime date,
+    Function(dynamic) callback) {
+  return Expanded(
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor:
+            currentIsSameDay(initialDate, date) ? AppColors.primaryBlue : AppColors.greyCTACancelColor,
+        foregroundColor:
+            currentIsSameDay(initialDate, date) ? AppColors.greyCTACancelColor : AppColors.primaryBlue,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      onPressed: () {
+        callback(date);
+      },
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: currentIsSameDay(initialDate, date)
+                  ? AppColors.whiteTextColor
+                  : AppColors.primaryBlue,
+              fontSize: 13,
+            ),
+      ),
+    ),
+  );
+}
+
+bool currentIsSameDay(DateTime? initialDate, DateTime date) =>
+    initialDate!.year == date.year &&
+    initialDate.month == date.month &&
+    initialDate.day == date.day;
+
+DateTime _getNextWeekday(DateTime date, int weekday) {
+  int daysToAdd = (weekday - date.weekday + 7) % 7;
+  return date.add(Duration(days: daysToAdd == 0 ? 7 : daysToAdd));
+}
+
+Widget _buildButton(
+    BuildContext context, String text, Color color, Color textColor, VoidCallback onPressed) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: color,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+    ),
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: kIsWeb?2.h:1.h),
+      child: Text(
+        text,
+        style: Theme.of(context).textTheme.displayMedium?.copyWith(
+              color: textColor,
+              fontSize: 14,
+            ),
+      ),
+    ),
+  );
+}
